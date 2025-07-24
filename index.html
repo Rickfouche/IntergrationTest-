@@ -93,19 +93,7 @@
         if (sceneEl.hasLoaded) hideLoader();
         else sceneEl.addEventListener("loaded", hideLoader);
 
-        flux.addEventListener("model-loaded", () => {
-          console.log("✅ Flux loaded. Applying chrome reflections.");
-          flux.object3D.traverse((node) => {
-            if (node.isMesh && node.material && node.material.isMeshStandardMaterial) {
-              node.material.envMapIntensity = 4.0;
-              node.material.metalness = 1.0;
-              node.material.roughness = 0.01;
-              node.material.color.set("white");
-              node.material.emissive.set("black");
-              node.material.emissiveIntensity = 0;
-              node.material.needsUpdate = true;
-            }
-          });
+       
         });
 
         target.addEventListener("targetFound", () => {
