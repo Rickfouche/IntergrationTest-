@@ -75,29 +75,31 @@
   <div id="tap-catcher"></div>
 
   <!-- ✅ HDRI loader component using correct RGBELoader -->
-  <script>
-    AFRAME.registerComponent('load-hdri-env', {
-      init: function () {
-        const sceneEl = this.el;
-        const renderer = sceneEl.renderer;
-        const pmremGenerator = new THREE.PMREMGenerator(renderer);
+<script>
+  AFRAME.registerComponent('load-hdri-env', {
+    init: function () {
+      const sceneEl = this.el;
+      const renderer = sceneEl.renderer;
+      const pmremGenerator = new THREE.PMREMGenerator(renderer);
 
-        new THREE.RGBELoader().load('textures/royal_esplanade_1k.hdr',
-          function (hdrTexture) {
-            const envMap = pmremGenerator.fromEquirectangular(hdrTexture).texture;
-            sceneEl.object3D.environment = envMap;
-            hdrTexture.dispose();
-            pmremGenerator.dispose();
-            console.log('✅ HDRI environment map applied');
-          },
-          undefined,
-          function (err) {
-            console.error('❌ Failed to load HDRI:', err);
-          }
-        );
-      }
-    });
-  </script>
+      // ✅ Corrected HDRI path here
+      new THREE.RGBELoader().load('textures/lake_pier_1k.hdr',
+        function (hdrTexture) {
+          const envMap = pmremGenerator.fromEquirectangular(hdrTexture).texture;
+          sceneEl.object3D.environment = envMap;
+          hdrTexture.dispose();
+          pmremGenerator.dispose();
+          console.log('✅ HDRI environment map applied');
+        },
+        undefined,
+        function (err) {
+          console.error('❌ Failed to load HDRI:', err);
+        }
+      );
+    }
+  });
+</script>
+
 
   <!-- ✅ Chrome material reflection logic -->
   <script>
