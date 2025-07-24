@@ -2,11 +2,15 @@
 <html lang="en">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Flux.001 — Mirrorborn AR</title>
+    <title>Flux.001 — Mirrorborn AR - Fighting Onyx Black (with custom HDR)</title>
 
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
+
+    <script src="lib/RGBELoader.js"></script>
+    <script src="components/aframe-env-map-component.js"></script>
+    <script src="components/aframe-hdr-environment.js"></script>
 
     <style>
       body { margin: 0; overflow: hidden; }
@@ -37,14 +41,15 @@
         renderer="colorManagement: true; physicallyCorrectLights: true; toneMapping: ACESFilmic;"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
-        light="defaultLightsEnabled: false"
         
-        environment="preset: contact; background: none; envMap: #hdriMap; skyType: atmosphere; lightPosition: 1 1 0; intensity: 1.0; ground: flat; groundColor: #333; shadow: true;"
+        light="defaultLightsEnabled: false" 
+        
+        hdr-environment="url: textures/royal_esplanade_1k.hdr; showBackground: false; showGround: false;" 
+        
       >
         <a-assets>
           <a-asset-item id="fluxModel" src="model/Flux.glb"></a-asset-item>
-          <a-asset-item id="hdriMap" src="textures/royal_esplanade_1k.hdr"></a-asset-item>
-        </a-assets>
+          </a-assets>
 
         <a-light type="directional" color="#FFF" intensity="3.0" position="-1 2 3" shadow></a-light>
         <a-light type="directional" color="#FFF" intensity="1.5" position="1 -2 -3" shadow></a-light>
@@ -80,7 +85,7 @@
           setTimeout(() => loader.style.display = "none", 500);
         };
 
-        // This waits for A-Frame's internal scene loading, which should include your model and the HDRI.
+        // Wait for the A-Frame scene (including the custom HDR component) to load
         if (sceneEl.hasLoaded) {
           hideLoader();
         } else {
@@ -93,17 +98,19 @@
             if (node.isMesh && node.material && node.material.isMeshStandardMaterial) {
               node.material.metalness = 1.0;
               node.material.roughness = 0.01;
-              node.material.envMapIntensity = 4.0; // Control intensity of reflections
-              node.material.color.set("white"); // Base color for chrome
+              node.material.envMapIntensity = 4.0; // Keep this high for strong reflections
+              node.material.color.set("white"); // Neutral base color
               node.material.emissive.set("black");
               node.material.emissiveIntensity = 0;
-              node.material.needsUpdate = true;
+              node.material.needsUpdate = true; // Essential to apply changes
+
               console.log(
                 "Applied chrome properties to",
                 node.name,
                 "Metalness:", node.material.metalness,
                 "Roughness:", node.material.roughness,
-                "EnvMapIntensity:", node.material.envMapIntensity
+                "EnvMapIntensity:", node.material.envMapIntensity,
+                "Has envMap (post-check):", !!node.material.envMap // Should now be true if hdr-environment works
               );
             } else if (node.isMesh) {
                 console.warn("Material is not MeshStandardMaterial, cannot apply PBR properties:", node.material.type);
