@@ -9,7 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
 
-  <!-- ✅ Correct RGBELoader version (Three.js 0.128.0 UMD) -->
+  <!-- ✅ Correct RGBELoader version -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js"></script>
 
   <style>
@@ -47,7 +47,6 @@
     >
       <a-assets>
         <a-asset-item id="fluxModel" src="model/Flux.glb"></a-asset-item>
-        <a-asset-item id="hdriMap" src="textures/lake_pier_1k.hdr"></a-asset-item>
       </a-assets>
 
       <!-- Lights -->
@@ -74,32 +73,34 @@
 
   <div id="tap-catcher"></div>
 
-  <!-- ✅ HDRI loader component using correct RGBELoader -->
-<script>
-  AFRAME.registerComponent('load-hdri-env', {
-    init: function () {
-      const sceneEl = this.el;
-      const renderer = sceneEl.renderer;
-      const pmremGenerator = new THREE.PMREMGenerator(renderer);
+  <!-- ✅ HDRI loader using Netlify link -->
+  <script>
+    AFRAME.registerComponent('load-hdri-env', {
+      init: function () {
+        const sceneEl = this.el;
+        const renderer = sceneEl.renderer;
+        const pmremGenerator = new THREE.PMREMGenerator(renderer);
 
-      // ✅ Corrected HDRI path here
-      new THREE.RGBELoader().load('textures/lake_pier_1k.hdr',
-        function (hdrTexture) {
-          const envMap = pmremGenerator.fromEquirectangular(hdrTexture).texture;
-          sceneEl.object3D.environment = envMap;
-          hdrTexture.dispose();
-          pmremGenerator.dispose();
-          console.log('✅ HDRI environment map applied');
-        },
-        undefined,
-        function (err) {
-          console.error('❌ Failed to load HDRI:', err);
-        }
-      );
-    }
-  });
-</script>
+        // ✅ Updated HDRI URL (Netlify-hosted)
+        const hdriUrl = 'https://chipper-crepe-2a6f40.netlify.app/royal_esplanade_1k.hdr';
 
+        new THREE.RGBELoader().load(
+          hdriUrl,
+          function (hdrTexture) {
+            const envMap = pmremGenerator.fromEquirectangular(hdrTexture).texture;
+            sceneEl.object3D.environment = envMap;
+            hdrTexture.dispose();
+            pmremGenerator.dispose();
+            console.log('✅ HDRI environment map applied');
+          },
+          undefined,
+          function (err) {
+            console.error('❌ Failed to load HDRI:', err);
+          }
+        );
+      }
+    });
+  </script>
 
   <!-- ✅ Chrome material reflection logic -->
   <script>
@@ -150,6 +151,7 @@
   </script>
 </body>
 </html>
+
 
 
 
