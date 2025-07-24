@@ -43,7 +43,7 @@
           <a-asset-item id="fluxModel" src="model/Flux.glb"></a-asset-item>
         </a-assets>
 
-        <!-- 🔆 Ultra-Chrome Light Rig -->
+        <!-- 🔆 Lighting -->
         <a-light type="directional" color="#ccffee" intensity="5113.5" position="-2 2 4" castShadow="true" target="#flux"></a-light>
         <a-light type="directional" color="#aaccff" intensity="5114.0" position="3 2 -3" castShadow="true" target="#flux"></a-light>
         <a-light type="spot" angle="30" penumbra="0.2" intensity="9115.0" color="#ffffff" position="0 5 0" target="#flux"></a-light>
@@ -81,7 +81,6 @@
       window.addEventListener("DOMContentLoaded", () => {
         const sceneEl = document.querySelector("a-scene");
         const loader = document.getElementById("loader");
-        const flux = document.querySelector("#flux");
         const target = document.querySelector("[mindar-image-target]");
         const tapCatcher = document.getElementById("tap-catcher");
 
@@ -92,9 +91,6 @@
 
         if (sceneEl.hasLoaded) hideLoader();
         else sceneEl.addEventListener("loaded", hideLoader);
-
-       
-        });
 
         target.addEventListener("targetFound", () => {
           console.log("🎯 Target Found");
