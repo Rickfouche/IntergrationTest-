@@ -79,7 +79,71 @@
     AFRAME.registerComponent('load-hdri-env', {
       init: function () {
         const sceneEl = this.el;
-        const renderer =
+        const renderer = sceneEl.renderer;
+        const pmremGenerator = new THREE.PMREMGenerator(renderer);
+
+        new THREE.RGBELoader().load('textures/royal_esplanade_1k.hdr', function (hdrTexture) {
+          const envMap = pmremGenerator.fromEquirectangular(hdrTexture).texture;
+          sceneEl.object3D.environment = envMap;
+          hdrTexture.dispose();
+          pmremGenerator.dispose();
+          console.log('✅ HDRI environment map applied');
+        }, undefined, function (err) {
+          console.error('❌ Failed to load HDRI:', err);
+        });
+      }
+    });
+  </script>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const sceneEl = document.querySelector("a-scene");
+      const loader = document.getElementById("loader");
+      const flux = document.querySelector("#flux");
+      const target = document.querySelector("[mindar-image-target]");
+      const tapCatcher = document.getElementById("tap-catcher");
+
+      const hideLoader = () => {
+        loader.style.opacity = "0";
+        setTimeout(() => loader.style.display = "none", 500);
+      };
+
+      if (sceneEl.hasLoaded) hideLoader();
+      else sceneEl.addEventListener("loaded", hideLoader);
+
+      flux.addEventListener("model-loaded", () => {
+        console.log("✅ Flux loaded. Applying chrome reflections.");
+        flux.object3D.traverse((node) => {
+          if (node.isMesh && node.material && node.material.isMeshStandardMaterial) {
+            node.material.metalness = 1.0;
+            node.material.roughness = 0.01;
+            node.material.envMapIntensity = 4.0;
+            node.material.color.set("white");
+            node.material.emissive.set("black");
+            node.material.emissiveIntensity = 0;
+            node.material.needsUpdate = true;
+          }
+        });
+      });
+
+      target.addEventListener("targetFound", () => {
+        console.log("🎯 Target Found");
+        tapCatcher.style.display = "block";
+      });
+
+      target.addEventListener("targetLost", () => {
+        console.log("🫥 Target Lost");
+        tapCatcher.style.display = "none";
+      });
+
+      tapCatcher.addEventListener("click", () => {
+        window.location.href = "https://neondoorway.com/mirrorborn";
+      });
+    });
+  </script>
+</body>
+</html>
+
 
 
 
