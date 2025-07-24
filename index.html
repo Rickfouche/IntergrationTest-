@@ -9,8 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
 
-    <!-- Reflection Tools -->
-    <script src="lib/RGBELoader.js"></script>
+    <!-- ✅ Working RGBELoader from CDN (browser-ready) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/RGBELoader.js"></script>
 
     <style>
       body { margin: 0; overflow: hidden; }
@@ -73,7 +73,7 @@
 
     <div id="tap-catcher"></div>
 
-    <!-- Manual HDR loader + reflection logic -->
+    <!-- ✅ HDRI loader component using CDN-loaded RGBELoader -->
     <script>
       AFRAME.registerComponent('load-hdri-env', {
         init: function () {
@@ -81,7 +81,7 @@
           const renderer = sceneEl.renderer;
           const pmremGenerator = new THREE.PMREMGenerator(renderer);
 
-          new RGBELoader().load('textures/royal_esplanade_1k.hdr', function (hdrTexture) {
+          new THREE.RGBELoader().load('textures/royal_esplanade_1k.hdr', function (hdrTexture) {
             const envMap = pmremGenerator.fromEquirectangular(hdrTexture).texture;
             sceneEl.object3D.environment = envMap;
             hdrTexture.dispose();
@@ -94,7 +94,7 @@
       });
     </script>
 
-    <!-- Main logic: reflections, animation, interactivity -->
+    <!-- Flux reflection logic -->
     <script>
       window.addEventListener("DOMContentLoaded", () => {
         const sceneEl = document.querySelector("a-scene");
@@ -143,6 +143,7 @@
     </script>
   </body>
 </html>
+
 
 
 
