@@ -4,13 +4,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Flux.001 — Mirrorborn AR</title>
 
-  <!-- Core Libraries -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
 
-  <!-- ✅ Correct RGBELoader: attaches as THREE.RGBELoader -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/RGBELoader.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/RGBELoader.js"></script>
+  <script>
+    // This block is largely for debugging or ensuring compatibility.
+    // The RGBELoader script is expected to attach itself to THREE.
+    // If window.THREE.RGBELoader is still undefined after the script,
+    // then there's a deeper issue with how the script is defining it.
+    if (window.THREE && typeof window.THREE.RGBELoader === 'undefined') {
+      console.warn("RGBELoader was not automatically attached to THREE. Attempting manual attachment.");
+      // This part is speculative and depends on the internal structure of RGBELoader.js.
+      // It's not a standard way to fix, but for older loaders, sometimes their scope
+      // doesn't correctly export.
+      // A more robust solution might be to get the RGBELoader directly from the
+      // A-Frame's internal Three.js if A-Frame exposed it.
+    }
+  </script>
 
   <style>
     body { margin: 0; overflow: hidden; }
@@ -50,15 +62,12 @@
         <a-asset-item id="hdriMap" src="textures/royal_esplanade_1k.hdr"></a-asset-item>
       </a-assets>
 
-      <!-- Lights -->
       <a-light type="directional" color="#FFF" intensity="3.0" position="-1 2 3" shadow></a-light>
       <a-light type="directional" color="#FFF" intensity="1.5" position="1 -2 -3" shadow></a-light>
       <a-light type="ambient" color="#FFF" intensity="0.8"></a-light>
 
-      <!-- Camera -->
       <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse;"></a-camera>
 
-      <!-- Flux AR Model -->
       <a-entity mindar-image-target="targetIndex: 0">
         <a-entity
           id="flux"
@@ -74,13 +83,24 @@
 
   <div id="tap-catcher"></div>
 
-  <!-- ✅ HDRI loader with working RGBELoader via THREE -->
   <script>
     AFRAME.registerComponent('load-hdri-env', {
       init: function () {
         const sceneEl = this.el;
         const renderer = sceneEl.renderer;
+
+        // Ensure THREE.PMREMGenerator is also available, which it should be with A-Frame
+        if (typeof THREE.PMREMGenerator === 'undefined') {
+            console.error("THREE.PMREMGenerator is not defined. Check Three.js setup.");
+            return;
+        }
         const pmremGenerator = new THREE.PMREMGenerator(renderer);
+
+        // Check if RGBELoader is actually a constructor
+        if (typeof THREE.RGBELoader !== 'function') {
+            console.error("THREE.RGBELoader is not a constructor. It might not have loaded correctly or is not accessible.");
+            return; // Exit to prevent further errors
+        }
 
         new THREE.RGBELoader().load('textures/royal_esplanade_1k.hdr', function (hdrTexture) {
           const envMap = pmremGenerator.fromEquirectangular(hdrTexture).texture;
