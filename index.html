@@ -35,14 +35,12 @@
         mindar-image="imageTargetSrc: targets/JazzCat.mind;"
         color-space="sRGB"
         embedded
-        renderer="colorManagement: true, physicallyCorrectLights: true, toneMapping: ACESFilmic"
+        renderer="colorManagement: true; physicallyCorrectLights: true; toneMapping: ACESFilmic"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
-        environment="lighting: physical; background: none; envMap: #hdriMap; intensity: 8.0;"
       >
         <a-assets>
           <a-asset-item id="fluxModel" src="model/Flux.glb"></a-asset-item>
-          <a-asset-item id="hdriMap" src="textures/lake_pier_1k.hdr"></a-asset-item>
         </a-assets>
 
         <!-- 🔆 Ultra-Chrome Light Rig -->
@@ -55,6 +53,7 @@
         <a-light type="directional" color="#FFF" intensity="1111.5" position="1 -2 -3" shadow></a-light>
         <a-light type="ambient" color="#aaffaa" intensity="11110.8"></a-light>
 
+        <!-- Camera -->
         <a-camera
           position="0 0 0"
           look-controls="enabled: false"
@@ -62,6 +61,7 @@
           cursor="fuse: false; rayOrigin: mouse;"
         ></a-camera>
 
+        <!-- Flux AR Model -->
         <a-entity mindar-image-target="targetIndex: 0">
           <a-entity
             id="flux"
@@ -94,7 +94,7 @@
         else sceneEl.addEventListener("loaded", hideLoader);
 
         flux.addEventListener("model-loaded", () => {
-          console.log("Flux model loaded. Applying settings to fight Onyx black.");
+          console.log("✅ Flux loaded. Applying chrome reflections.");
           flux.object3D.traverse((node) => {
             if (node.isMesh && node.material && node.material.isMeshStandardMaterial) {
               node.material.envMapIntensity = 4.0;
@@ -104,13 +104,6 @@
               node.material.emissive.set("black");
               node.material.emissiveIntensity = 0;
               node.material.needsUpdate = true;
-
-              console.log(
-                "✅ Chrome material set on", node.name,
-                "| Metal:", node.material.metalness,
-                "| Rough:", node.material.roughness,
-                "| EnvMapIntensity:", node.material.envMapIntensity
-              );
             }
           });
         });
@@ -132,6 +125,7 @@
     </script>
   </body>
 </html>
+
 
 
 
