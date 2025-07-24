@@ -59,34 +59,33 @@
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
         embedded
-        environment="lighting: physical; background: none; envMap: #hdriMap; intensity: 8.0;" 
+        environment="preset: forest; lighting: physical; background: none; shadow: true; skyType: atmosphere; lightPosition: 1 1 0;"
+        # For a full custom HDR, you'd load it into a-assets and reference it here:
+        # environment="lighting: physical; background: none; envMap: #hdriMap; intensity: 8.0;"
       >
         <a-assets>
           <a-asset-item id="fluxModel" src="model/Flux.glb"></a-asset-item>
-          <a-asset-item id="hdriMap" src="textures/lake_pier_1k.hdr"></a-asset-item>
-        </a-assets>
+          </a-assets>
 
         <a-light
           type="directional"
           color="#FFF"
-          intensity="3.0" 
+          intensity="3.0"
           position="-1 2 3"
           shadow
         ></a-light>
         <a-light
           type="directional"
           color="#FFF"
-          intensity="1.5" 
+          intensity="1.5"
           position="1 -2 -3"
           shadow
         ></a-light>
-
         <a-light
           type="ambient"
           color="#FFF"
-          intensity="0.8" 
+          intensity="0.8"
         ></a-light>
-
 
         <a-camera
           position="0 0 0"
@@ -130,23 +129,26 @@
         }
 
         flux.addEventListener("model-loaded", () => {
-          console.log("Flux model loaded. Applying settings to fight Onyx black.");
+          console.log("Flux model loaded. Applying settings for reflections.");
           flux.object3D.traverse((node) => {
             if (node.isMesh) {
               console.log("Processing mesh:", node.name, "Material type:", node.material.type);
               if (node.material.isMeshStandardMaterial) {
-                // MATERIAL REFLECTION INTENSITY: BOOSTED HIGH TO COUNTER ONYX
-                node.material.envMapIntensity = 4.0; 
-
-                // PURE MIRROR CHROME properties
-                node.material.metalness = 1.0;
+                // These properties are key for PBR reflections
+                node.material.metalness = 1.0; // Make it metallic for reflections
                 node.material.roughness = 0.01; // Keep very low for sharpest reflections
+                
+                // IMPORTANT: The environment map is typically applied by the `environment` component
+                // to the scene's renderer, which then applies it to all PBR materials.
+                // You usually don't need to manually set `node.material.envMap` if `environment` is active.
+                // However, `envMapIntensity` is still useful to control reflection strength.
+                node.material.envMapIntensity = 4.0; // Boost reflection intensity
 
                 node.material.color.set("white"); // Neutral base color for reflections
 
                 // EMISSIVE BRIGHTNESS: ZEROED OUT - crucial to avoid self-glow
-                node.material.emissive.set("black"); 
-                node.material.emissiveIntensity = 0; 
+                node.material.emissive.set("black");
+                node.material.emissiveIntensity = 0;
 
                 node.material.needsUpdate = true;
                 console.log(
@@ -156,7 +158,7 @@
                   "Roughness:", node.material.roughness,
                   "EnvMapIntensity:", node.material.envMapIntensity,
                   "Emissive Intensity:", node.material.emissiveIntensity,
-                  "Has envMap (via JS check):", !!node.material.envMap
+                  "Has envMap (via JS check):", !!node.material.envMap // This might still be false if envMap is applied at scene level.
                 );
               } else {
                 console.warn(
