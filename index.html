@@ -8,21 +8,10 @@
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/RGBELoader.js"></script>
-  <script>
-    // This block is largely for debugging or ensuring compatibility.
-    // The RGBELoader script is expected to attach itself to THREE.
-    // If window.THREE.RGBELoader is still undefined after the script,
-    // then there's a deeper issue with how the script is defining it.
-    if (window.THREE && typeof window.THREE.RGBELoader === 'undefined') {
-      console.warn("RGBELoader was not automatically attached to THREE. Attempting manual attachment.");
-      // This part is speculative and depends on the internal structure of RGBELoader.js.
-      // It's not a standard way to fix, but for older loaders, sometimes their scope
-      // doesn't correctly export.
-      // A more robust solution might be to get the RGBELoader directly from the
-      // A-Frame's internal Three.js if A-Frame exposed it.
-    }
-  </script>
+  <script src="lib/RGBELoader.js"></script>
+
+  <script src="components/aframe-env-map-component.js"></script>
+  <script src="components/aframe-hdr-environment.js"></script>
 
   <style>
     body { margin: 0; overflow: hidden; }
@@ -55,11 +44,12 @@
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
       light="defaultLightsEnabled: false"
-      load-hdri-env
+      # REMOVED: load-hdri-env - we're using hdr-environment instead
+      hdr-environment="url: textures/royal_esplanade_1k.hdr; showBackground: false; showGround: false;" # Use your HDR texture here
     >
       <a-assets>
         <a-asset-item id="fluxModel" src="model/Flux.glb"></a-asset-item>
-        <a-asset-item id="hdriMap" src="textures/royal_esplanade_1k.hdr"></a-asset-item>
+        <a-asset-item id="hdriMap" src="textures/royal_esplanade_1k.hdr"></a-asset-item> # Still keep for asset reference if needed by components
       </a-assets>
 
       <a-light type="directional" color="#FFF" intensity="3.0" position="-1 2 3" shadow></a-light>
@@ -76,6 +66,9 @@
           scale="0.5 0.5 0.5"
           animation-mixer="loop: repeat; play-all: true"
           shadow
+          # ADDED: env-map="src: #hdriMap" OR use a custom component to apply if env-map is not working automatically
+          # For hdr-environment component, it should apply the environment map globally.
+          # We'll rely on the model-loaded event to set material properties.
         ></a-entity>
       </a-entity>
     </a-scene>
@@ -84,35 +77,9 @@
   <div id="tap-catcher"></div>
 
   <script>
-    AFRAME.registerComponent('load-hdri-env', {
-      init: function () {
-        const sceneEl = this.el;
-        const renderer = sceneEl.renderer;
-
-        // Ensure THREE.PMREMGenerator is also available, which it should be with A-Frame
-        if (typeof THREE.PMREMGenerator === 'undefined') {
-            console.error("THREE.PMREMGenerator is not defined. Check Three.js setup.");
-            return;
-        }
-        const pmremGenerator = new THREE.PMREMGenerator(renderer);
-
-        // Check if RGBELoader is actually a constructor
-        if (typeof THREE.RGBELoader !== 'function') {
-            console.error("THREE.RGBELoader is not a constructor. It might not have loaded correctly or is not accessible.");
-            return; // Exit to prevent further errors
-        }
-
-        new THREE.RGBELoader().load('textures/royal_esplanade_1k.hdr', function (hdrTexture) {
-          const envMap = pmremGenerator.fromEquirectangular(hdrTexture).texture;
-          sceneEl.object3D.environment = envMap;
-          hdrTexture.dispose();
-          pmremGenerator.dispose();
-          console.log('✅ HDRI environment map applied');
-        }, undefined, function (err) {
-          console.error('❌ Failed to load HDRI:', err);
-        });
-      }
-    });
+    // No need for 'load-hdri-env' component as 'hdr-environment' handles it
+    // The previous 'load-hdri-env' component is now replaced by the hdr-environment component.
+    // The RGBELoader and PMREMGenerator logic is encapsulated within aframe-hdr-environment.js.
   </script>
 
   <script>
@@ -131,19 +98,38 @@
       if (sceneEl.hasLoaded) hideLoader();
       else sceneEl.addEventListener("loaded", hideLoader);
 
+      // We no longer need to wait for a custom 'hdri-ready' event
+      // The 'hdr-environment' component should set scene.environment automatically.
+      // We still need to ensure the model is loaded before trying to modify its materials.
+
       flux.addEventListener("model-loaded", () => {
-        console.log("✅ Flux loaded. Applying chrome reflections.");
-        flux.object3D.traverse((node) => {
-          if (node.isMesh && node.material && node.material.isMeshStandardMaterial) {
-            node.material.metalness = 1.0;
-            node.material.roughness = 0.01;
-            node.material.envMapIntensity = 4.0;
-            node.material.color.set("white");
-            node.material.emissive.set("black");
-            node.material.emissiveIntensity = 0;
-            node.material.needsUpdate = true;
-          }
-        });
+        console.log("✅ Flux model loaded. Attempting to apply chrome reflections.");
+        // Delay applying reflections slightly to ensure the HDR environment is fully set up
+        // by the 'hdr-environment' component.
+        setTimeout(() => {
+            flux.object3D.traverse((node) => {
+              if (node.isMesh && node.material && node.material.isMeshStandardMaterial) {
+                node.material.metalness = 1.0;
+                node.material.roughness = 0.01;
+                node.material.envMapIntensity = 4.0; // Adjust as needed
+                node.material.color.set("white"); // Ensure the base color is white for chrome
+                node.material.emissive.set("black");
+                node.material.emissiveIntensity = 0;
+                node.material.needsUpdate = true;
+
+                // Crucially, ensure the envMap is assigned. The hdr-environment component
+                // should set sceneEl.object3D.environment, which MeshStandardMaterial
+                // should pick up automatically. But explicitly setting it here
+                // can't hurt and helps ensure it's applied.
+                if (sceneEl.object3D.environment) {
+                  node.material.envMap = sceneEl.object3D.environment;
+                  console.log("Applied scene environment map to material.");
+                } else {
+                  console.warn("Scene environment map is not yet available, reflections might not show.");
+                }
+              }
+            });
+        }, 100); // Small delay to allow hdr-environment to fully initialize
       });
 
       target.addEventListener("targetFound", () => {
