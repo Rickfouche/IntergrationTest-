@@ -10,7 +10,12 @@
 
     <style>
       body { margin: 0; overflow: hidden; }
-      .ar-scene-container { width: 100vw; height: 100vh; position: relative; }
+      .ar-scene-container {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+        display: none; /* Hide initially */
+      }
       #tap-catcher {
         position: fixed; top: 0; left: 0;
         width: 100vw; height: 100vh;
@@ -53,7 +58,6 @@
         <a-light type="directional" color="#FFF" intensity="1111.5" position="1 -2 -3" shadow></a-light>
         <a-light type="ambient" color="#aaffaa" intensity="11110.8"></a-light>
 
-        <!-- Camera -->
         <a-camera
           position="0 0 0"
           look-controls="enabled: false"
@@ -61,7 +65,6 @@
           cursor="fuse: false; rayOrigin: mouse;"
         ></a-camera>
 
-        <!-- Flux AR Model -->
         <a-entity mindar-image-target="targetIndex: 0">
           <a-entity
             id="flux"
@@ -83,15 +86,21 @@
         const loader = document.getElementById("loader");
         const flux = document.querySelector("#flux");
         const target = document.querySelector("[mindar-image-target]");
+        const sceneContainer = document.querySelector(".ar-scene-container");
         const tapCatcher = document.getElementById("tap-catcher");
 
-        const hideLoader = () => {
+        const hideLoaderAndRevealScene = () => {
           loader.style.opacity = "0";
-          setTimeout(() => loader.style.display = "none", 500);
+          setTimeout(() => {
+            loader.style.display = "none";
+            sceneContainer.style.display = "block";
+          }, 500);
         };
 
-        if (sceneEl.hasLoaded) hideLoader();
-        else sceneEl.addEventListener("loaded", hideLoader);
+        sceneEl.addEventListener("arReady", () => {
+          console.log("✅ MindAR camera ready");
+          hideLoaderAndRevealScene();
+        });
 
         flux.addEventListener("model-loaded", () => {
           console.log("✅ Flux loaded. Applying chrome reflections.");
@@ -125,9 +134,6 @@
     </script>
   </body>
 </html>
-
-
-
 
 
 
