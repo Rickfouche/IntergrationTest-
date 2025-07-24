@@ -50,6 +50,21 @@
       </a-assets>
 
       <!-- Lights -->
+      <!-- 🔥 Key Light (front hard blast) -->
+<a-light type="directional" color="#ffffff" intensity="3.5" position="-2 2 4" castShadow="true" target="#flux"></a-light>
+
+<!-- 💥 Rim Light (intense back glow) -->
+<a-light type="directional" color="#aaccff" intensity="4.0" position="3 2 -3" castShadow="true" target="#flux"></a-light>
+
+<!-- 🔮 Overhead Spotlight (chrome popper) -->
+<a-light type="spot" angle="30" penumbra="0.2" intensity="5.0" color="#ffffff" position="0 5 0" target="#flux"></a-light>
+
+<!-- 🌀 Ground Up Light (metal bounce simulation) -->
+<a-light type="point" color="#ffffff" intensity="2.5" distance="10" position="0 -1 0"></a-light>
+
+<!-- 🌌 Ambient Filler (cool tint for specular enhancement) -->
+<a-light type="ambient" color="#8899ff" intensity="0.2"></a-light>
+
       <a-light type="directional" color="#FFF" intensity="3.0" position="-1 2 3" shadow></a-light>
       <a-light type="directional" color="#FFF" intensity="1.5" position="1 -2 -3" shadow></a-light>
       <a-light type="ambient" color="#FFF" intensity="0.8"></a-light>
