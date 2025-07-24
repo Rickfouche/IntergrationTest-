@@ -1,147 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Flux.001 — Mirrorborn AR</title>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flux.001 — Mirrorborn AR</title>
 
-    <!-- Core Libraries -->
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
+  <!-- Core Libraries -->
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
 
-    <!-- ✅ Working RGBELoader from CDN (browser-ready) -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/RGBELoader.js"></script>
+  <!-- ✅ Correct RGBELoader: attaches as THREE.RGBELoader -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/RGBELoader.min.js"></script>
 
-    <style>
-      body { margin: 0; overflow: hidden; }
-      .ar-scene-container { width: 100vw; height: 100vh; position: relative; }
-      #tap-catcher {
-        position: fixed; top: 0; left: 0;
-        width: 100vw; height: 100vh;
-        z-index: 999; display: none;
-      }
-      #loader {
-        position: fixed; top: 0; left: 0;
-        width: 100vw; height: 100vh;
-        background: black;
-        display: flex; justify-content: center; align-items: center;
-        color: white; font-family: sans-serif; font-size: 1.2rem;
-        z-index: 9999; transition: opacity 0.5s ease;
-      }
-    </style>
-  </head>
-
-  <body>
-    <div id="loader"><div id="loader-text">🚪✨ Loading Chrome Flux...</div></div>
-    <div class="ar-scene-container">
-      <a-scene
-        mindar-image="imageTargetSrc: targets/JazzCat.mind"
-        color-space="sRGB"
-        embedded
-        renderer="colorManagement: true; physicallyCorrectLights: true; toneMapping: ACESFilmic;"
-        vr-mode-ui="enabled: false"
-        device-orientation-permission-ui="enabled: false"
-        light="defaultLightsEnabled: false"
-        load-hdri-env
-      >
-        <a-assets>
-          <a-asset-item id="fluxModel" src="model/Flux.glb"></a-asset-item>
-          <a-asset-item id="hdriMap" src="textures/royal_esplanade_1k.hdr"></a-asset-item>
-        </a-assets>
-
-        <!-- Lights -->
-        <a-light type="directional" color="#FFF" intensity="3.0" position="-1 2 3" shadow></a-light>
-        <a-light type="directional" color="#FFF" intensity="1.5" position="1 -2 -3" shadow></a-light>
-        <a-light type="ambient" color="#FFF" intensity="0.8"></a-light>
-
-        <!-- Camera -->
-        <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse;"></a-camera>
-
-        <!-- Flux AR Model -->
-        <a-entity mindar-image-target="targetIndex: 0">
-          <a-entity
-            id="flux"
-            gltf-model="#fluxModel"
-            position="0 0 0"
-            scale="0.5 0.5 0.5"
-            animation-mixer="loop: repeat; play-all: true"
-            shadow
-          ></a-entity>
-        </a-entity>
-      </a-scene>
-    </div>
-
-    <div id="tap-catcher"></div>
-
-    <!-- ✅ HDRI loader component using CDN-loaded RGBELoader -->
-  <script>
-  AFRAME.registerComponent('load-hdri-env', {
-    init: function () {
-      const sceneEl = this.el;
-      const renderer = sceneEl.renderer;
-      const pmremGenerator = new THREE.PMREMGenerator(renderer);
-
-      new RGBELoader().load('textures/royal_esplanade_1k.hdr', function (hdrTexture) {
-        const envMap = pmremGenerator.fromEquirectangular(hdrTexture).texture;
-        sceneEl.object3D.environment = envMap;
-        hdrTexture.dispose();
-        pmremGenerator.dispose();
-        console.log('✅ HDRI environment map applied');
-      }, undefined, function (err) {
-        console.error('❌ Failed to load HDRI:', err);
-      });
+  <style>
+    body { margin: 0; overflow: hidden; }
+    .ar-scene-container { width: 100vw; height: 100vh; position: relative; }
+    #tap-catcher {
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 999; display: none;
     }
-  });
-</script>
-    <!-- Flux reflection logic -->
-    <script>
-      window.addEventListener("DOMContentLoaded", () => {
-        const sceneEl = document.querySelector("a-scene");
-        const loader = document.getElementById("loader");
-        const flux = document.querySelector("#flux");
-        const target = document.querySelector("[mindar-image-target]");
-        const tapCatcher = document.getElementById("tap-catcher");
+    #loader {
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: black;
+      display: flex; justify-content: center; align-items: center;
+      color: white; font-family: sans-serif; font-size: 1.2rem;
+      z-index: 9999; transition: opacity 0.5s ease;
+    }
+  </style>
+</head>
 
-        const hideLoader = () => {
-          loader.style.opacity = "0";
-          setTimeout(() => loader.style.display = "none", 500);
-        };
+<body>
+  <div id="loader"><div id="loader-text">🚪✨ Loading Chrome Flux...</div></div>
 
-        if (sceneEl.hasLoaded) hideLoader();
-        else sceneEl.addEventListener("loaded", hideLoader);
+  <div class="ar-scene-container">
+    <a-scene
+      mindar-image="imageTargetSrc: targets/JazzCat.mind"
+      color-space="sRGB"
+      embedded
+      renderer="colorManagement: true; physicallyCorrectLights: true; toneMapping: ACESFilmic;"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+      light="defaultLightsEnabled: false"
+      load-hdri-env
+    >
+      <a-assets>
+        <a-asset-item id="fluxModel" src="model/Flux.glb"></a-asset-item>
+        <a-asset-item id="hdriMap" src="textures/royal_esplanade_1k.hdr"></a-asset-item>
+      </a-assets>
 
-        flux.addEventListener("model-loaded", () => {
-          console.log("✅ Flux loaded. Applying chrome reflections.");
-          flux.object3D.traverse((node) => {
-            if (node.isMesh && node.material && node.material.isMeshStandardMaterial) {
-              node.material.metalness = 1.0;
-              node.material.roughness = 0.01;
-              node.material.envMapIntensity = 4.0;
-              node.material.color.set("white");
-              node.material.emissive.set("black");
-              node.material.emissiveIntensity = 0;
-              node.material.needsUpdate = true;
-            }
-          });
-        });
+      <!-- Lights -->
+      <a-light type="directional" color="#FFF" intensity="3.0" position="-1 2 3" shadow></a-light>
+      <a-light type="directional" color="#FFF" intensity="1.5" position="1 -2 -3" shadow></a-light>
+      <a-light type="ambient" color="#FFF" intensity="0.8"></a-light>
 
-        target.addEventListener("targetFound", () => {
-          console.log("🎯 Target Found");
-          tapCatcher.style.display = "block";
-        });
+      <!-- Camera -->
+      <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse;"></a-camera>
 
-        target.addEventListener("targetLost", () => {
-          console.log("🫥 Target Lost");
-          tapCatcher.style.display = "none";
-        });
+      <!-- Flux AR Model -->
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-entity
+          id="flux"
+          gltf-model="#fluxModel"
+          position="0 0 0"
+          scale="0.5 0.5 0.5"
+          animation-mixer="loop: repeat; play-all: true"
+          shadow
+        ></a-entity>
+      </a-entity>
+    </a-scene>
+  </div>
 
-        tapCatcher.addEventListener("click", () => {
-          window.location.href = "https://neondoorway.com/mirrorborn";
-        });
-      });
-    </script>
-  </body>
-</html>
+  <div id="tap-catcher"></div>
+
+  <!-- ✅ HDRI loader with working RGBELoader via THREE -->
+  <script>
+    AFRAME.registerComponent('load-hdri-env', {
+      init: function () {
+        const sceneEl = this.el;
+        const renderer =
+
 
 
 
